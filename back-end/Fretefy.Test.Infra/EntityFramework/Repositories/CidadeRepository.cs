@@ -66,23 +66,99 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
             }
         }
 
-        public IQueryable<Cidade> List()
+        public DefaultReturn<IEnumerable<Cidade>> Listar()
         {
-            return _dbSet.AsQueryable();
+            try
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = _dbSet.AsQueryable() };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao atualizar cidade | Exception - {ex.Message}." };
+            }
         }
 
-        public IEnumerable<Cidade> ListByUf(string uf)
+        public DefaultReturn<Cidade> ObterPorId(Guid id)
         {
-            return _dbSet.Where(w => EF.Functions.Like(w.UF, $"%{uf}%"));
+            try
+            {
+                var result = Listar();
+
+                if(result.Status != System.Net.HttpStatusCode.OK)
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter cidades." };
+                
+                var cidade = result.Obj.Where(x => x.Id == id).FirstOrDefault();
+                if(cidade == null)
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma cidade com esse id foi encontrada." };                
+                
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.OK, Obj = cidade };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao procurar cidades | Exception - {ex.Message}." };
+            }
         }
 
-        public IEnumerable<Cidade> Query(string terms)
+        public DefaultReturn<IEnumerable<Cidade>> ListByUf(string uf)
         {
-            return _dbSet.Where(w => EF.Functions.Like(w.Nome, $"%{terms}%") || EF.Functions.Like(w.UF, $"%{terms}%"));
+            try
+            {
+                var result = Listar();
+
+                if (result.Status != System.Net.HttpStatusCode.OK)
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter cidades." };
+
+                var cidades = result.Obj.Where(x => x.UF.ToLower() == uf.ToLower());
+                if (!cidades.Any())
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma cidade com esse UF encontrada." };
+
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = cidades };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao procurar cidades | Exception - {ex.Message}." };
+            }
         }
-        public IEnumerable<Cidade> VerificarCidadeExistente(string nome, string uf)
+
+        public DefaultReturn<IEnumerable<Cidade>> Query(string terms)
         {
-            return _dbSet.Where(w => EF.Functions.Like(w.Nome, $"%{nome}%") && EF.Functions.Like(w.UF, $"%{uf}%"));
+            try
+            {
+                var result = Listar();
+
+                if (result.Status != System.Net.HttpStatusCode.OK)
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter cidades." };
+
+                var cidades = result.Obj.Where(x => x.Nome.ToLower() == terms.ToLower());
+                if (!cidades.Any())
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma cidade com esse nome encontrada." };
+
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = cidades };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao atualizar cidade | Exception - {ex.Message}." };
+            }
+        }
+        public DefaultReturn<IEnumerable<Cidade>> VerificarCidadeExistente(string nome, string uf)
+        {
+            try
+            {
+                var result = Listar();
+
+                if (result.Status != System.Net.HttpStatusCode.OK)
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter cidades." };
+
+                var cidades = result.Obj.Where(x => x.Nome.ToLower() == nome.ToLower() && x.UF.ToLower() == uf.ToLower());
+                if (cidades.Any())
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.UnprocessableEntity, Message = "Já existe uma cidade com esse nome cadastrada nesse UF." };
+
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = cidades };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao atualizar cidade | Exception - {ex.Message}." };
+            }
         }
     }
 }

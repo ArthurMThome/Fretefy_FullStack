@@ -1,6 +1,6 @@
 ﻿using Fretefy.Test.Domain.Entities;
 using Fretefy.Test.Domain.Entities.Auxiliar;
-using Fretefy.Test.Domain.Interfaces;
+using Fretefy.Test.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -21,34 +21,61 @@ namespace Fretefy.Test.WebApi.Controllers
         [HttpGet]
         public IActionResult List([FromQuery] string uf, [FromQuery] string terms)
         {
-            IEnumerable<Cidade> cidades;
+            try
+            {
+                DefaultReturn<IEnumerable<Cidade>> result;
 
-            if (!string.IsNullOrEmpty(terms))
-                cidades = _cidadeService.Query(terms);
-            else if (!string.IsNullOrEmpty(uf))
-                cidades = _cidadeService.ListByUf(uf);
-            else
-                cidades = _cidadeService.List();
+                if (!string.IsNullOrEmpty(terms))
+                    result = _cidadeService.Query(terms);
+                else if (!string.IsNullOrEmpty(uf))
+                    result = _cidadeService.ListByUf(uf);
+                else
+                    result = _cidadeService.Listar();
 
-            return Ok(cidades);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Cidade { UF = uf, Nome = terms } });
+            }
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(Guid id)
         {
-            var cidades = _cidadeService.Get(id);
-            return Ok(cidades);
+            try
+            {
+                var result = _cidadeService.ObterPorId(id);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Cidade { Id = id } });
+            }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody] Cidade cidade)
         {
-            var result = _cidadeService.AdicionarCidade(cidade);
+            try
+            {
+                var result = _cidadeService.AdicionarCidade(cidade);
 
-            if(result.Status == System.Net.HttpStatusCode.OK)
-                return Ok(result);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
 
-            return BadRequest(result);
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = cidade });
+            }
         }
 
         public IActionResult Put([FromBody] Cidade cidade)
@@ -60,7 +87,7 @@ namespace Fretefy.Test.WebApi.Controllers
                 if (result.Status == System.Net.HttpStatusCode.OK)
                     return Ok(result);
 
-                return BadRequest(result);
+                return StatusCode(result.Status.GetHashCode(), result);
             }
             catch (Exception ex)
             {

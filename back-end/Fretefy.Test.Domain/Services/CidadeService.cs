@@ -1,7 +1,7 @@
 ﻿using Fretefy.Test.Domain.Entities;
 using Fretefy.Test.Domain.Entities.Auxiliar;
-using Fretefy.Test.Domain.Interfaces;
 using Fretefy.Test.Domain.Interfaces.Repositories;
+using Fretefy.Test.Domain.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,19 +19,26 @@ namespace Fretefy.Test.Domain.Services
 
         public DefaultReturn<Cidade> AdicionarCidade(Cidade cidade)
         {
-            if(string.IsNullOrEmpty(cidade.Nome))
-                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Nome da cidade está em branco.", Obj = cidade };
+            try
+            {
+                if (string.IsNullOrEmpty(cidade.Nome))
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Nome da cidade está em branco.", Obj = cidade };
 
-            if (string.IsNullOrEmpty(cidade.UF))
-                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Estado da cidade está em branco.", Obj = cidade };
+                if (string.IsNullOrEmpty(cidade.UF))
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Estado da cidade está em branco.", Obj = cidade };
 
-            var resultCheck = _cidadeRepository.VerificarCidadeExistente(cidade.Nome, cidade.UF);
-            if (resultCheck.Any())
-                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Já existe uma cidade com esse nome cadastrada nesse estado.", Obj = cidade };
+                var resultCheck = _cidadeRepository.VerificarCidadeExistente(cidade.Nome, cidade.UF);
+                if (resultCheck.Status == System.Net.HttpStatusCode.OK && resultCheck.Obj.Any())
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Já existe uma cidade com esse nome cadastrada nesse estado.", Obj = cidade };
 
-            cidade.Id = Guid.NewGuid();
+                cidade.Id = Guid.NewGuid();
 
-            return _cidadeRepository.AdicionarCidade(cidade);
+                return _cidadeRepository.AdicionarCidade(cidade);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = cidade };
+            }
         }
 
         public DefaultReturn<Cidade> Update(Cidade cidade)
@@ -49,24 +56,52 @@ namespace Fretefy.Test.Domain.Services
             }
         }
 
-        public Cidade Get(Guid id)
+        public DefaultReturn<Cidade> ObterPorId(Guid id)
         {
-            return _cidadeRepository.List().FirstOrDefault(f => f.Id == id);
+            try
+            {
+                return _cidadeRepository.ObterPorId(id);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Cidade { Id = id } };
+            }
         }
 
-        public IEnumerable<Cidade> List()
+        public DefaultReturn<IEnumerable<Cidade>> Listar()
         {
-            return _cidadeRepository.List();
+            try
+            {
+                return _cidadeRepository.Listar();
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
+            }
         }
 
-        public IEnumerable<Cidade> ListByUf(string uf)
+        public DefaultReturn<IEnumerable<Cidade>> ListByUf(string uf)
         {
-            return _cidadeRepository.ListByUf(uf);
+            try
+            {
+                return _cidadeRepository.ListByUf(uf);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new List<Cidade> { new Cidade { UF = uf } } };
+            }
         }
 
-        public IEnumerable<Cidade> Query(string terms)
+        public DefaultReturn<IEnumerable<Cidade>> Query(string terms)
         {
-            return _cidadeRepository.Query(terms);
+            try
+            {
+                return _cidadeRepository.Query(terms);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new List<Cidade> { new Cidade { Nome = terms } } };
+            }
         }
     }
 }

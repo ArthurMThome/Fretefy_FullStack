@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Fretefy.Test.Domain.Entities
 {
@@ -9,17 +10,19 @@ namespace Fretefy.Test.Domain.Entities
         
         }
 
-        public Cidade(string nome, string uf)
+        public Cidade(string nome, string uf, Guid? regiaoId)
         {
             Id = Guid.NewGuid();
             Nome = nome;
             UF = uf;
-            RegiaoId = null;
+            RegiaoId = regiaoId;
         }
 
         public Guid Id { get; set; }
         public string Nome { get; set; }
         public string UF { get; set; }
         public Guid? RegiaoId { get; set; }
+        [JsonIgnore]
+        public Regiao Regiao { get; set; }
     }
 }
