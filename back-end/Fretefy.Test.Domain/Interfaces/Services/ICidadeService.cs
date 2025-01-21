@@ -12,5 +12,6 @@ namespace Fretefy.Test.Domain.Interfaces
         IEnumerable<Cidade> ListByUf(string uf);
         IEnumerable<Cidade> Query(string terms);
         DefaultReturn<Cidade> AdicionarCidade(Cidade cidade);
+        DefaultReturn<Cidade> Update(Cidade cidade);
     }
 }

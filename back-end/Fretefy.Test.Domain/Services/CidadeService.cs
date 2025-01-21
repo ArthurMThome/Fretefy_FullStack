@@ -5,7 +5,6 @@ using Fretefy.Test.Domain.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Fretefy.Test.Domain.Services
 {
@@ -33,6 +32,21 @@ namespace Fretefy.Test.Domain.Services
             cidade.Id = Guid.NewGuid();
 
             return _cidadeRepository.AdicionarCidade(cidade);
+        }
+
+        public DefaultReturn<Cidade> Update(Cidade cidade)
+        {
+            try
+            {
+                if (cidade.Id == null || cidade.Id == Guid.Empty)
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Id está null.", Obj = cidade };
+
+                return _cidadeRepository.Update(cidade);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = cidade };
+            }
         }
 
         public Cidade Get(Guid id)

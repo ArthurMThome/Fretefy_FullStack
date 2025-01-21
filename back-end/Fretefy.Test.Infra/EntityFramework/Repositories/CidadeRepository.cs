@@ -2,10 +2,8 @@
 using Fretefy.Test.Domain.Entities.Auxiliar;
 using Fretefy.Test.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace Fretefy.Test.Infra.EntityFramework.Repositories
@@ -23,12 +21,49 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
 
         public DefaultReturn<Cidade> AdicionarCidade(Cidade cidade)
         {
-            var result = _dbSet.Add(cidade);
-            int registrosAfetados = _context.SaveChanges();
-            if (registrosAfetados > 0)
-                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.OK, Message = "Registro adicionado com sucesso!", Obj = cidade };
-            else
-                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao adicionar registro.", Obj = cidade };
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _dbSet.Add(cidade);
+                    int registrosAfetados = _context.SaveChanges();
+                    if (registrosAfetados > 0)
+                    {
+                        transaction.Commit();
+                        return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.OK, Message = "Cidade adicionada com sucesso!", Obj = cidade };
+                    }
+                    else
+                        return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao adicionar cidade.", Obj = cidade };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao adicionar cidade | Exception - {ex.Message}.", Obj = cidade };
+                }
+            }
+        }
+        public DefaultReturn<Cidade> Update(Cidade cidade)
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var result = _dbSet.Update(cidade);
+                    int registrosAfetados = _context.SaveChanges();
+                    if (registrosAfetados > 0)
+                    {
+                        transaction.Commit();
+                        return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.OK, Message = "Cidade alterada com sucesso!", Obj = cidade };
+                    }
+                    else
+                        return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao atualizar cidade.", Obj = cidade };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao atualizar cidade | Exception - {ex.Message}.", Obj = cidade };
+                }
+            }
         }
 
         public IQueryable<Cidade> List()

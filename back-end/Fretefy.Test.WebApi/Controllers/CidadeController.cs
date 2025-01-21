@@ -1,4 +1,5 @@
 ﻿using Fretefy.Test.Domain.Entities;
+using Fretefy.Test.Domain.Entities.Auxiliar;
 using Fretefy.Test.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -48,6 +49,23 @@ namespace Fretefy.Test.WebApi.Controllers
                 return Ok(result);
 
             return BadRequest(result);
+        }
+
+        public IActionResult Put([FromBody] Cidade cidade)
+        {
+            try
+            {
+                var result = _cidadeService.Update(cidade);
+
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = cidade });
+            }
         }
     }
 }

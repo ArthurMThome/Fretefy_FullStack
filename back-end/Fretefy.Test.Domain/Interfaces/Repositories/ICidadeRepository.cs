@@ -12,5 +12,6 @@ namespace Fretefy.Test.Domain.Interfaces.Repositories
         IEnumerable<Cidade> Query(string terms);
         IEnumerable<Cidade> VerificarCidadeExistente(string nome, string uf);
         DefaultReturn<Cidade> AdicionarCidade(Cidade cidade);
+        DefaultReturn<Cidade> Update(Cidade newCidade);
     }
 }
