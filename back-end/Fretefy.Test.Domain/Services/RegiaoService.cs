@@ -1,11 +1,9 @@
 ﻿using Fretefy.Test.Domain.Entities;
+using Fretefy.Test.Domain.Entities.Auxiliar;
 using Fretefy.Test.Domain.Interfaces.Repositories;
-using Fretefy.Test.Domain.Interfaces;
+using Fretefy.Test.Domain.Interfaces.Services;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Fretefy.Test.Domain.Interfaces.Services;
-using System.Linq;
 
 namespace Fretefy.Test.Domain.Services
 {
@@ -18,21 +16,72 @@ namespace Fretefy.Test.Domain.Services
             _regiaoRepository = regiaoRepository;
         }
 
-        public Regiao ObterPorId(Guid id)
+        public DefaultReturn<Regiao> ObterPorId(Guid id)
         {
-            return _regiaoRepository.ObterPorId(id).FirstOrDefault();
+            try
+            {
+                return _regiaoRepository.ObterPorId(id);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Regiao { Id = id } };
+            }
         }
-        public IEnumerable<Regiao> Listar()
+
+        public DefaultReturn<IEnumerable<Regiao>> Listar()
         {
-            return _regiaoRepository.Listar();
+            try
+            {
+                return _regiaoRepository.Listar();
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
+            }
         }
-        public IEnumerable<Regiao> ListarPorCidade(string cidade)
+
+        public DefaultReturn<IEnumerable<Regiao>> ListarPorCidade(string cidade)
         {
-            return _regiaoRepository.ListarPorCidade(cidade);
+            try
+            {
+                return _regiaoRepository.ListarPorCidade(cidade);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
+            }
         }
-        public IEnumerable<Regiao> ListarPorNome(string nome)
+
+        public DefaultReturn<IEnumerable<Regiao>> ListarPorNome(string nome)
         {
-            return _regiaoRepository.ListarPorNome(nome);
+            try
+            {
+                return _regiaoRepository.ListarPorNome(nome);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new List<Regiao> { new Regiao { Nome = nome } } };
+            }
+        }
+
+        public DefaultReturn<Regiao> ChangeStatus(Regiao regiao)
+        {
+            try
+            {
+                if (regiao.Id == null || regiao.Id == Guid.Empty)
+                    return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Id está null." };
+
+                if (regiao.Status == 1)
+                    regiao.Status = 2;
+                else
+                    regiao.Status = 1;
+
+                return _regiaoRepository.Update(regiao);
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = regiao };
+            }
         }
     }
 }

@@ -1,15 +1,19 @@
 ﻿using Fretefy.Test.Domain.Entities;
+using Fretefy.Test.Domain.Entities.Auxiliar;
 using Fretefy.Test.Domain.Entities.Filters;
+using Fretefy.Test.Domain.Interfaces;
 using Fretefy.Test.Domain.Interfaces.Services;
+using Fretefy.Test.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace Fretefy.Test.WebApi.Controllers
 {
+    [Route("api/regiao")]
     [ApiController]
-    [Route("api/[controller]")]
     public class RegiaoController : ControllerBase
     {
         private readonly IRegiaoService _regiaoService;
@@ -20,21 +24,64 @@ namespace Fretefy.Test.WebApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult List([FromBody] RegiaoFilter filter)
+        public IActionResult List([FromQuery] string nome, [FromQuery] string cidade)
         {
-            if (filter.Id.HasValue)
-                return Ok(_regiaoService.ObterPorId(filter.Id.Value));
+            try
+            {
+                DefaultReturn<IEnumerable<Regiao>> result;
 
-            IEnumerable<Regiao> regioes;
+                if (!string.IsNullOrEmpty(cidade))
+                    result = _regiaoService.ListarPorCidade(cidade);
+                else if (!string.IsNullOrEmpty(nome))
+                    result = _regiaoService.ListarPorNome(nome);
+                else
+                    result = _regiaoService.Listar();
 
-            if (!string.IsNullOrEmpty(filter.Cidade))
-                regioes = _regiaoService.ListarPorCidade(filter.Cidade);
-            else if (!string.IsNullOrEmpty(filter.Nome))
-                regioes = _regiaoService.ListarPorNome(filter.Nome);
-            else
-                regioes = _regiaoService.Listar();
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
 
-            return Ok(regioes);
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Get(Guid id)
+        {
+            try
+            {
+                var result = _regiaoService.ObterPorId(id);
+
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Regiao { Id = id } });
+            }
+        }
+
+        [HttpPut("changestatus")]
+        public IActionResult ChangeStatus(Regiao regiao)
+        {
+            try
+            {
+                var result = _regiaoService.ChangeStatus(regiao);
+
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message });
+            }
         }
 
         //[HttpPost]
@@ -57,38 +104,32 @@ namespace Fretefy.Test.WebApi.Controllers
         //    return NoContent();
         //}
 
-        //[HttpDelete("{id}")]
-        //public IActionResult Delete(int id)
+
+        //[HttpGet("exportar")]
+        //public IActionResult ExportarParaExcel([FromBody] RegiaoFilter filter)
         //{
-        //    _regiaoService.Delete(id);
-        //    return NoContent();
+        //    IEnumerable<Regiao> regioes;
+
+        //    if (!string.IsNullOrEmpty(filter.Cidade))
+        //        regioes = _regiaoService.ListarPorCidade(filter.Cidade);
+        //    else if (!string.IsNullOrEmpty(filter.Nome))
+        //        regioes = _regiaoService.ListarPorNome(filter.Nome);
+        //    else
+        //        regioes = _regiaoService.Listar();
+
+        //    using (var package = new ExcelPackage())
+        //    {
+        //        var worksheet = package.Workbook.Worksheets.Add("Regiões");
+        //        worksheet.Cells["A1"].LoadFromCollection(regioes);
+
+        //        using (var memoryStream = new MemoryStream())
+        //        {
+        //            package.SaveAs(memoryStream);
+        //            memoryStream.Position = 0;
+
+        //            return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "regioes.xlsx");
+        //        }
+        //    }
         //}
-
-        [HttpGet("exportar")]
-        public IActionResult ExportarParaExcel([FromBody] RegiaoFilter filter)
-        {
-            IEnumerable<Regiao> regioes;
-
-            if (!string.IsNullOrEmpty(filter.Cidade))
-                regioes = _regiaoService.ListarPorCidade(filter.Cidade);
-            else if (!string.IsNullOrEmpty(filter.Nome))
-                regioes = _regiaoService.ListarPorNome(filter.Nome);
-            else
-                regioes = _regiaoService.Listar();
-
-            using (var package = new ExcelPackage())
-            {
-                var worksheet = package.Workbook.Worksheets.Add("Regiões");
-                worksheet.Cells["A1"].LoadFromCollection(regioes);
-
-                using (var memoryStream = new MemoryStream())
-                {
-                    package.SaveAs(memoryStream);
-                    memoryStream.Position = 0;
-
-                    return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "regioes.xlsx");
-                }
-            }
-        }
     }
 }

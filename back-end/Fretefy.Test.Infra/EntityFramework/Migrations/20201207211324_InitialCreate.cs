@@ -12,7 +12,8 @@ namespace Fretefy.Test.Infra.EntityFramework.Migrations
             columns: table => new
             {
                 Id = table.Column<Guid>(nullable: false),
-                Nome = table.Column<string>(nullable: true)
+                Nome = table.Column<string>(nullable: true),
+                Status = table.Column<ushort>(nullable: false)
             },
             constraints: table =>
             {
@@ -41,8 +42,8 @@ namespace Fretefy.Test.Infra.EntityFramework.Migrations
 
             migrationBuilder.InsertData(
                 table: "Regiao",
-                columns: new[] { "Id", "Nome" },
-                values: new object[] { new Guid("afc12ff5-eacd-420a-835a-69e9b3b78456"), "Sul" }
+                columns: new[] { "Id", "Status", "Nome" },
+                values: new object[] { new Guid("afc12ff5-eacd-420a-835a-69e9b3b78456"), 1, "Sul" }
             );
 
             migrationBuilder.InsertData(

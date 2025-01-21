@@ -1,15 +1,16 @@
 ﻿using Fretefy.Test.Domain.Entities;
+using Fretefy.Test.Domain.Entities.Auxiliar;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Fretefy.Test.Domain.Interfaces.Repositories
 {
     public interface IRegiaoRepository
     {
-        IQueryable<Regiao> ObterPorId(Guid id);
-        IQueryable<Regiao> ListarPorNome(string nome);
-        IEnumerable<Regiao> Listar();
-        IEnumerable<Regiao> ListarPorCidade(string cidade);
+        DefaultReturn<Regiao> ObterPorId(Guid id);
+        DefaultReturn<IEnumerable<Regiao>> ListarPorNome(string nome);
+        DefaultReturn<IEnumerable<Regiao>> Listar();
+        DefaultReturn<IEnumerable<Regiao>> ListarPorCidade(string cidade);
+        DefaultReturn<Regiao> Update(Regiao regiao);
     }
 }

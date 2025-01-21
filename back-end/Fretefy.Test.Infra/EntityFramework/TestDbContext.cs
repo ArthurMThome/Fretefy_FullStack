@@ -34,7 +34,7 @@ namespace Fretefy.Test.Infra.EntityFramework
             .HasForeignKey(c => c.RegiaoId);
 
             var result = modelBuilder.Entity<Regiao>().HasData(
-                new Regiao { Id = new Guid("afc12ff5-eacd-420a-835a-69e9b3b78111"), Nome = "Sul" }
+                new Regiao { Id = new Guid("afc12ff5-eacd-420a-835a-69e9b3b78111"), Status = 1, Nome = "Sul" }
                 );        
 
             modelBuilder.Entity<Cidade>().HasData(

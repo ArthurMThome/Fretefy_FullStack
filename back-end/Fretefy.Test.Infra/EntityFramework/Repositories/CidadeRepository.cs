@@ -42,6 +42,7 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
                 }
             }
         }
+
         public DefaultReturn<Cidade> Update(Cidade cidade)
         {
             using (var transaction = _context.Database.BeginTransaction())
@@ -140,6 +141,7 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
                 return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao atualizar cidade | Exception - {ex.Message}." };
             }
         }
+
         public DefaultReturn<IEnumerable<Cidade>> VerificarCidadeExistente(string nome, string uf)
         {
             try
