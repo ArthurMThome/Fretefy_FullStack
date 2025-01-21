@@ -14,12 +14,12 @@ namespace Fretefy.Test.Domain.Entities
             Id = Guid.NewGuid();
             Nome = nome;
             UF = uf;
+            RegiaoId = null;
         }
 
         public Guid Id { get; set; }
-
         public string Nome { get; set; }
-
         public string UF { get; set; }
+        public Guid? RegiaoId { get; set; }
     }
 }

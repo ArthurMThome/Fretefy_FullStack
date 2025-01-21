@@ -1,4 +1,5 @@
 ﻿using System;
+using Fretefy.Test.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Fretefy.Test.Infra.EntityFramework.Migrations
@@ -13,11 +14,13 @@ namespace Fretefy.Test.Infra.EntityFramework.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Nome = table.Column<string>(type: "TEXT", maxLength: 1024, nullable: false),
-                    UF = table.Column<string>(type: "TEXT", maxLength: 2, nullable: false)
+                    UF = table.Column<string>(type: "TEXT", maxLength: 2, nullable: false),
+                    RegiaoId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Cidade", x => x.Id);
+                    table.ForeignKey("FK_Cidade_Regiao", x => x.RegiaoId, "Regiao", "Id");
                 });
 
             migrationBuilder.InsertData(

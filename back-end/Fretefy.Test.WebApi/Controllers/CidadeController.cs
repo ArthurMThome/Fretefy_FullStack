@@ -38,5 +38,16 @@ namespace Fretefy.Test.WebApi.Controllers
             var cidades = _cidadeService.Get(id);
             return Ok(cidades);
         }
+
+        [HttpPost]
+        public IActionResult Post([FromBody] Cidade cidade)
+        {
+            var result = _cidadeService.AdicionarCidade(cidade);
+
+            if(result.Status == System.Net.HttpStatusCode.OK)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }

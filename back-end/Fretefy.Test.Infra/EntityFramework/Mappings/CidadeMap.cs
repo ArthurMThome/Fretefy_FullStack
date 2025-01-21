@@ -11,6 +11,7 @@ namespace Fretefy.Test.Infra.EntityFramework.Mappings
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Nome).HasMaxLength(1024).IsRequired();
             builder.Property(p => p.UF).HasMaxLength(2).IsRequired();
+            builder.Property(p => p.RegiaoId);
 
             builder.HasData(
                 new Cidade("Rio Branco", "AC"),
@@ -28,7 +29,6 @@ namespace Fretefy.Test.Infra.EntityFramework.Mappings
                 new Cidade("Belo Horizonte", "MG"),
                 new Cidade("Belém", "PA"),
                 new Cidade("João Pessoa", "PB"),
-                new Cidade("Curitiba", "PR"),
                 new Cidade("Recife", "PE"),
                 new Cidade("Teresina", "PI"),
                 new Cidade("Rio de Janeiro", "RJ"),

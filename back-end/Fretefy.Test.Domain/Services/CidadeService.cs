@@ -1,4 +1,5 @@
 ﻿using Fretefy.Test.Domain.Entities;
+using Fretefy.Test.Domain.Entities.Auxiliar;
 using Fretefy.Test.Domain.Interfaces;
 using Fretefy.Test.Domain.Interfaces.Repositories;
 using System;
@@ -15,6 +16,23 @@ namespace Fretefy.Test.Domain.Services
         public CidadeService(ICidadeRepository cidadeRepository)
         {
             _cidadeRepository = cidadeRepository;
+        }
+
+        public DefaultReturn<Cidade> AdicionarCidade(Cidade cidade)
+        {
+            if(string.IsNullOrEmpty(cidade.Nome))
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Nome da cidade está em branco.", Obj = cidade };
+
+            if (string.IsNullOrEmpty(cidade.UF))
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Estado da cidade está em branco.", Obj = cidade };
+
+            var resultCheck = _cidadeRepository.VerificarCidadeExistente(cidade.Nome, cidade.UF);
+            if (resultCheck.Any())
+                return new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Já existe uma cidade com esse nome cadastrada nesse estado.", Obj = cidade };
+
+            cidade.Id = Guid.NewGuid();
+
+            return _cidadeRepository.AdicionarCidade(cidade);
         }
 
         public Cidade Get(Guid id)
