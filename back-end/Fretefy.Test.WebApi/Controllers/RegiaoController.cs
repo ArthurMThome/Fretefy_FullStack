@@ -1,14 +1,9 @@
 ﻿using Fretefy.Test.Domain.Entities;
 using Fretefy.Test.Domain.Entities.Auxiliar;
-using Fretefy.Test.Domain.Entities.Filters;
-using Fretefy.Test.Domain.Interfaces;
 using Fretefy.Test.Domain.Interfaces.Services;
-using Fretefy.Test.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Fretefy.Test.WebApi.Controllers
 {
@@ -63,6 +58,42 @@ namespace Fretefy.Test.WebApi.Controllers
             catch (Exception ex)
             {
                 return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Regiao { Id = id } });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Post([FromBody] Regiao regiao)
+        {
+            try
+            {
+                var result = _regiaoService.AdicionarRegiao(regiao);
+
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = regiao });
+            }
+        }
+
+        [HttpPut]
+        public IActionResult Put([FromBody] Regiao regiao)
+        {
+            try
+            {
+                var result = _regiaoService.Update(regiao);
+
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                    return Ok(result);
+
+                return StatusCode(result.Status.GetHashCode(), result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = regiao });
             }
         }
 

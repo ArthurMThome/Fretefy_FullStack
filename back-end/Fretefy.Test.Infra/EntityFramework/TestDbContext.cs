@@ -40,6 +40,10 @@ namespace Fretefy.Test.Infra.EntityFramework
             modelBuilder.Entity<Cidade>().HasData(
                 new Cidade { Id = new Guid("afc12ff5-eacd-420a-835a-69e9b3b78222"), Nome = "Curitiba", UF = "PR", RegiaoId = new Guid("afc12ff5-eacd-420a-835a-69e9b3b78111") }
                 );
+
+            modelBuilder.Entity<Cidade>().HasData(
+                new Cidade { Id = new Guid("c215fc2e-bcda-4404-8efb-4b23c4495847"), Nome = "Santos", UF = "SP" }
+                );
         }
     }
 }

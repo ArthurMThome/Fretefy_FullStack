@@ -51,6 +51,12 @@ namespace Fretefy.Test.Infra.EntityFramework.Migrations
                 columns: new[] { "Id", "Nome", "UF", "RegiaoId" },
                 values: new object[] { new Guid("c215fc2e-bcda-4404-8efb-4b23c4433c5b"), "Curitiba", "PR", Guid.Parse("afc12ff5-eacd-420a-835a-69e9b3b78456") }
             );
+
+            migrationBuilder.InsertData(
+                table: "Cidade",
+                columns: new[] { "Id", "Nome", "UF", "RegiaoId" },
+                values: new object[] { new Guid("c215fc2e-bcda-4404-8efb-4b23c4495847"), "Santos", "SP" }
+            );
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

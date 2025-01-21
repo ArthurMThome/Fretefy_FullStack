@@ -12,5 +12,7 @@ namespace Fretefy.Test.Domain.Interfaces.Services
         DefaultReturn<IEnumerable<Regiao>> ListarPorCidade(string cidade);
         DefaultReturn<IEnumerable<Regiao>> ListarPorNome(string nome);
         DefaultReturn<Regiao> ChangeStatus(Regiao regiao);
+        DefaultReturn<Regiao> AdicionarRegiao(Regiao regiao);
+        DefaultReturn<Regiao> Update(Regiao regiao);
     }
 }

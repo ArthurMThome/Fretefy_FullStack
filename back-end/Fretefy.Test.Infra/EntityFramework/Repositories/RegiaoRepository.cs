@@ -19,6 +19,30 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
             _context = dbContext;
         }
 
+        public DefaultReturn<Regiao> AdicionarRegiao(Regiao regiao)
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _dbSet.Add(regiao);
+                    int registrosAfetados = _context.SaveChanges();
+                    if (registrosAfetados > 0)
+                    {
+                        transaction.Commit();
+                        return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.OK, Message = "Região adicionada com sucesso!", Obj = regiao };
+                    }
+                    else
+                        return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao adicionar região.", Obj = regiao };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao adicionar região | Exception - {ex.Message}.", Obj = regiao };
+                }
+            }
+        }
+
         public DefaultReturn<Regiao> Update(Regiao regiao)
         {
             using (var transaction = _context.Database.BeginTransaction())
@@ -87,7 +111,7 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
             }
         }
 
-        public DefaultReturn<IEnumerable<Regiao>> ListarPorNome(string nome)
+        public DefaultReturn<IEnumerable<Regiao>> ListarPorNome(string nome, bool beLike = true)
         {
             try
             {
@@ -96,7 +120,13 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
                 if (result.Status != System.Net.HttpStatusCode.OK)
                     return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter regiões." };
 
-                var regioes = result.Obj.Where(x => x.Nome.ToLower().Contains(nome.ToLower()));
+                IEnumerable<Regiao> regioes;
+
+                if(beLike)
+                    regioes = result.Obj.Where(x => x.Nome.ToLower().Contains(nome.ToLower()));
+                else
+                    regioes = result.Obj.Where(x => x.Nome.ToLower() == nome.ToLower());
+
                 if (regioes == null)
                     return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma região com esse nome foi encontrada." };
 
