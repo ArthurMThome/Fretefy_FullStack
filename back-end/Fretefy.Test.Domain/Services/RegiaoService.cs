@@ -1,10 +1,12 @@
 ﻿using Fretefy.Test.Domain.Entities;
 using Fretefy.Test.Domain.Entities.Auxiliar;
+using Fretefy.Test.Domain.Entities.Dto;
 using Fretefy.Test.Domain.Interfaces.Repositories;
 using Fretefy.Test.Domain.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Fretefy.Test.Domain.Services
 {
@@ -69,18 +71,52 @@ namespace Fretefy.Test.Domain.Services
             }
         }
 
-        public DefaultReturn<Regiao> Update(Regiao regiao)
+        public DefaultReturn<RegiaoDto> Update(Regiao regiao)
         {
             try
             {
                 if (regiao.Id == null || regiao.Id == Guid.Empty)
-                    return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Id está null.", Obj = regiao };
+                    return new DefaultReturn<RegiaoDto> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Id está null." };
 
-                return _regiaoRepository.Update(regiao);
+                if(regiao.Cidades.GroupBy(p => p.Id).Any(g => g.Count() > 1))
+                    return new DefaultReturn<RegiaoDto> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Existe cidade duplicada." };
+
+                var newCidades = regiao.Cidades.Select(x => x.Id).ToList();
+
+                var result = _regiaoRepository.Update(regiao);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                {
+                    var resultList = _cidadeService.ObterPorRegiaoId(regiao.Id);
+                    if(resultList.Status == System.Net.HttpStatusCode.OK)
+                    {
+                        foreach (var cidade in resultList.Obj)
+                        {
+                            if (!newCidades.Contains(cidade.Id))
+                            {
+                                var newcidade = new Cidade() 
+                                { 
+                                    Id = cidade.Id,
+                                    Nome = cidade.Nome,
+                                    UF = cidade.UF,
+                                    RegiaoId = null
+                                };
+
+                                var resultUpdate = _cidadeService.Update(newcidade);
+                                if(resultUpdate.Status != System.Net.HttpStatusCode.OK)
+                                    return new DefaultReturn<RegiaoDto> { Status = resultUpdate.Status, Message = resultUpdate.Message };
+                            }
+                        }
+                    }
+
+                    var returnData = Convert(result.Obj);
+                    return new DefaultReturn<RegiaoDto> { Status = result.Status, Message = result.Message, Obj = returnData };
+                }
+
+                return new DefaultReturn<RegiaoDto> { Status = result.Status, Message = result.Message };
             }
             catch (Exception ex)
             {
-                return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = regiao };
+                return new DefaultReturn<RegiaoDto> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
             }
         }
 
@@ -96,60 +132,105 @@ namespace Fretefy.Test.Domain.Services
             }
         }
 
-        public DefaultReturn<IEnumerable<Regiao>> Listar()
+        public DefaultReturn<IEnumerable<RegiaoDto>> Listar()
         {
             try
             {
-                return _regiaoRepository.Listar();
+                var result = _regiaoRepository.Listar();
+                if(result.Status == System.Net.HttpStatusCode.OK)
+                {
+                    var returnData = result.Obj.Select(Convert);
+                    return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = result.Status, Message = result.Message, Obj= returnData };
+                }
+
+                return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = result.Status, Message = result.Message };
             }
             catch (Exception ex)
             {
-                return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
+                return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
             }
         }
 
-        public DefaultReturn<IEnumerable<Regiao>> ListarPorCidade(string cidade)
+        public DefaultReturn<IEnumerable<RegiaoDto>> ListarPorCidade(string cidade)
         {
             try
             {
-                return _regiaoRepository.ListarPorCidade(cidade);
+                var result = _regiaoRepository.ListarPorCidade(cidade);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                {
+                    var returnData = result.Obj.Select(Convert);
+                    return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = result.Status, Message = result.Message, Obj = returnData };
+                }
+
+                return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = result.Status, Message = result.Message };
             }
             catch (Exception ex)
             {
-                return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
+                return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
             }
         }
 
-        public DefaultReturn<IEnumerable<Regiao>> ListarPorNome(string nome)
+        public DefaultReturn<IEnumerable<RegiaoDto>> ListarPorNome(string nome)
         {
             try
             {
-                return _regiaoRepository.ListarPorNome(nome);
+                var result = _regiaoRepository.ListarPorNome(nome);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                {
+                    var returnData = result.Obj.Select(Convert);
+                    return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = result.Status, Message = result.Message, Obj = returnData };
+                }
+
+                return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = result.Status, Message = result.Message };
             }
             catch (Exception ex)
             {
-                return new DefaultReturn<IEnumerable<Regiao>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new List<Regiao> { new Regiao { Nome = nome } } };
+                return new DefaultReturn<IEnumerable<RegiaoDto>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new List<RegiaoDto> { new RegiaoDto { Nome = nome } } };
             }
         }
 
-        public DefaultReturn<Regiao> ChangeStatus(Regiao regiao)
+        public DefaultReturn<RegiaoDto> ChangeStatus(Regiao regiao)
         {
             try
             {
                 if (regiao.Id == null || regiao.Id == Guid.Empty)
-                    return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Id está null." };
+                    return new DefaultReturn<RegiaoDto> { Status = System.Net.HttpStatusCode.BadRequest, Message = "Id está null." };
 
                 if (regiao.Status == 1)
                     regiao.Status = 2;
                 else
                     regiao.Status = 1;
 
-                return _regiaoRepository.Update(regiao);
+                var result = _regiaoRepository.Update(regiao);
+                if (result.Status == System.Net.HttpStatusCode.OK)
+                {
+                    var returnData = Convert(result.Obj);
+                    return new DefaultReturn<RegiaoDto> { Status = result.Status, Message = result.Message, Obj = returnData };
+                }
+
+                return new DefaultReturn<RegiaoDto> { Status = result.Status, Message = result.Message };
             }
             catch (Exception ex)
             {
-                return new DefaultReturn<Regiao> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = regiao };
+                return new DefaultReturn<RegiaoDto> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message };
             }
+        }
+
+        private RegiaoDto Convert(Regiao obj)
+        {
+            return new RegiaoDto
+            {
+                Id = obj.Id,
+                Status = obj.Status,
+                Nome = obj.Nome,
+                Cidades = obj.Cidades.Select(x => new CidadeDto
+                {
+                    Id = x.Id,
+                    Nome = x.Nome,
+                    UF = x.UF,
+                    RegiaoId = x.RegiaoId
+                })
+            };
         }
     }
 }

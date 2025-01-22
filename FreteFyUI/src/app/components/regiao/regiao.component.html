@@ -1,0 +1,39 @@
+<nav>
+  <a routerLink="/">Home</a>
+  <a routerLink="/cidade">Cidade</a>
+  <a>Região</a>
+</nav>
+
+<div>
+  <button routerLink="/regiao/adicionar">Adicionar Região</button>
+  <button (click)="exportar()">Exportar para Excel</button>
+
+  <table *ngIf="regioes | async as regioes">
+    <thead>
+      <tr>
+        <th>Região</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let regiao of regioes">
+        <td>{{ regiao.nome }}</td>
+        <td [style.color]="regiao.status == 1 ? 'green' : 'red'"
+            [style.border]="regiao.status == 1 ? '1px solid green' : '1px solid red'">
+          {{ regiao.status == 1 ? 'Ativo' : 'Inativo' }}
+        </td>
+        <td>
+          <button routerLink="/regiao/editar/{{ regiao.id }}">
+            <i class="fa fa-edit">Editar</i>
+          </button>
+          <button (click)="changeStatus(regiao)">
+            <i class="fa fa-toggle-off" [class.fa-toggle-on]="regiao.status == 1">
+              {{ regiao.status == 1 ? 'Inativar' : 'Ativar' }}
+            </i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

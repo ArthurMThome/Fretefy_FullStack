@@ -1,9 +1,12 @@
 ﻿using Fretefy.Test.Domain.Entities;
 using Fretefy.Test.Domain.Entities.Auxiliar;
+using Fretefy.Test.Domain.Entities.Dto;
 using Fretefy.Test.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Fretefy.Test.WebApi.Controllers
 {
@@ -23,7 +26,7 @@ namespace Fretefy.Test.WebApi.Controllers
         {
             try
             {
-                DefaultReturn<IEnumerable<Regiao>> result;
+                DefaultReturn<IEnumerable<RegiaoDto>> result;
 
                 if (!string.IsNullOrEmpty(cidade))
                     result = _regiaoService.ListarPorCidade(cidade);
@@ -32,10 +35,7 @@ namespace Fretefy.Test.WebApi.Controllers
                 else
                     result = _regiaoService.Listar();
 
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -49,11 +49,7 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _regiaoService.ObterPorId(id);
-
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -67,11 +63,7 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _regiaoService.AdicionarRegiao(regiao);
-
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -85,11 +77,7 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _regiaoService.Update(regiao);
-
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -103,11 +91,7 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _regiaoService.ChangeStatus(regiao);
-
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -115,52 +99,30 @@ namespace Fretefy.Test.WebApi.Controllers
             }
         }
 
-        //[HttpPost]
-        //public ActionResult<Regiao> Post(Regiao regiao)
-        //{
-        //    _regiaoService.Create(regiao);
-        //    return CreatedAtAction("Get", new { id = regiao.Id }, regiao);
-        //}
+        [HttpGet("exportar")]
+        public IActionResult ExportarParaExcel()
+        {
+            var result = _regiaoService.Listar();
+            if(result.Status != System.Net.HttpStatusCode.OK)
+                return StatusCode(result.Status.GetHashCode(), result);
 
-        //[HttpPut("{id}")]
-        //public IActionResult Put(int id, Regiao regiao)
-        //{
-        //    if (id != regiao.Id)
-        //    {
-        //        return BadRequest();
-        //    }
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Regiões");
+                worksheet.Cells["A1"].LoadFromCollection(result.Obj);
 
-        //    _regiaoService.Update(regiao);
+                using (var memoryStream = new MemoryStream())
+                {
+                    package.SaveAs(memoryStream);
 
-        //    return NoContent();
-        //}
+                    var responseStream = new MemoryStream();
+                    memoryStream.CopyTo(responseStream);
 
-
-        //[HttpGet("exportar")]
-        //public IActionResult ExportarParaExcel([FromBody] RegiaoFilter filter)
-        //{
-        //    IEnumerable<Regiao> regioes;
-
-        //    if (!string.IsNullOrEmpty(filter.Cidade))
-        //        regioes = _regiaoService.ListarPorCidade(filter.Cidade);
-        //    else if (!string.IsNullOrEmpty(filter.Nome))
-        //        regioes = _regiaoService.ListarPorNome(filter.Nome);
-        //    else
-        //        regioes = _regiaoService.Listar();
-
-        //    using (var package = new ExcelPackage())
-        //    {
-        //        var worksheet = package.Workbook.Worksheets.Add("Regiões");
-        //        worksheet.Cells["A1"].LoadFromCollection(regioes);
-
-        //        using (var memoryStream = new MemoryStream())
-        //        {
-        //            package.SaveAs(memoryStream);
-        //            memoryStream.Position = 0;
-
-        //            return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "regioes.xlsx");
-        //        }
-        //    }
-        //}
+                    responseStream.Position = 0;
+                    return File(responseStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "regioes.xlsx");
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,30 @@
+<nav>
+  <a routerLink="/">Home</a>
+  <a>Cidade</a>
+  <a routerLink="/regiao">Região</a>
+</nav>
+
+<div>
+  <button routerLink="/cidade/adicionar">Adicionar Cidade</button>
+
+  <table *ngIf="cidades | async as cidades">
+    <thead>
+      <tr>
+        <th>Cidade</th>
+        <th>UF</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cidade of cidades">
+        <td>{{ cidade.nome }}</td>
+        <td>{{ cidade.uf }}</td>
+        <td>
+          <button routerLink='/cidade/editar/{{ cidade.id }}'>
+            <i class="fa fa-edit">Editar</i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

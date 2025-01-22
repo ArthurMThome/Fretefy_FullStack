@@ -1,5 +1,6 @@
 ﻿using Fretefy.Test.Domain.Entities;
 using Fretefy.Test.Domain.Entities.Auxiliar;
+using Fretefy.Test.Domain.Entities.Dto;
 using Fretefy.Test.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -23,7 +24,7 @@ namespace Fretefy.Test.WebApi.Controllers
         {
             try
             {
-                DefaultReturn<IEnumerable<Cidade>> result;
+                DefaultReturn<IEnumerable<CidadeDto>> result;
 
                 if (!string.IsNullOrEmpty(terms))
                     result = _cidadeService.Query(terms);
@@ -32,10 +33,7 @@ namespace Fretefy.Test.WebApi.Controllers
                 else
                     result = _cidadeService.Listar();
 
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -49,14 +47,39 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _cidadeService.ObterPorId(id);
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Cidade { Id = id } });
+            }
+        }
+
+        [HttpGet("regiao/{id}")]
+        public IActionResult GetByRegiaoId(Guid id)
+        {
+            try
+            {
+                var result = _cidadeService.ObterPorRegiaoId(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message, Obj = new Cidade { Id = id } });
+            }
+        }
+
+        [HttpGet("regiao")]
+        public IActionResult GetRegiaoNull()
+        {
+            try
+            {
+                var result = _cidadeService.ObterPorRegiaoNull();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(System.Net.HttpStatusCode.InternalServerError.GetHashCode(), new DefaultReturn<Cidade> { Status = System.Net.HttpStatusCode.InternalServerError, Message = ex.Message });
             }
         }
 
@@ -66,11 +89,7 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _cidadeService.AdicionarCidade(cidade);
-
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -83,11 +102,7 @@ namespace Fretefy.Test.WebApi.Controllers
             try
             {
                 var result = _cidadeService.Update(cidade);
-
-                if (result.Status == System.Net.HttpStatusCode.OK)
-                    return Ok(result);
-
-                return StatusCode(result.Status.GetHashCode(), result);
+                return Ok(result);
             }
             catch (Exception ex)
             {

@@ -49,8 +49,22 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
             {
                 try
                 {
-                    var result = _dbSet.Update(cidade);
-                    int registrosAfetados = _context.SaveChanges();
+                    int registrosAfetados = 0;
+                    var cidadeExistente = _context.Find<Cidade>(cidade.Id);
+
+                    if(cidadeExistente != null)
+                    {
+                        cidadeExistente.Nome = cidade.Nome;
+                        cidadeExistente.UF = cidade.UF;
+                        cidadeExistente.RegiaoId = cidade.RegiaoId;
+                        registrosAfetados = _context.SaveChanges();
+                    }
+                    else
+                    {
+                        var result = _dbSet.Update(cidade);
+                        registrosAfetados = _context.SaveChanges();
+                    }
+
                     if (registrosAfetados > 0)
                     {
                         transaction.Commit();
@@ -112,6 +126,48 @@ namespace Fretefy.Test.Infra.EntityFramework.Repositories
                 var cidades = result.Obj.Where(x => x.UF.ToLower() == uf.ToLower());
                 if (!cidades.Any())
                     return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma cidade com esse UF encontrada." };
+
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = cidades };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao procurar cidades | Exception - {ex.Message}." };
+            }
+        }
+
+        public DefaultReturn<IEnumerable<Cidade>> ObterPorRegiaoId(Guid id)
+        {
+            try
+            {
+                var result = Listar();
+
+                if (result.Status != System.Net.HttpStatusCode.OK)
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter cidades." };
+
+                var cidades = result.Obj.Where(x => x.RegiaoId == id);
+                if (!cidades.Any())
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma cidade para essa região foi encontrada." };
+
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = cidades };
+            }
+            catch (Exception ex)
+            {
+                return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = $"Erro ao procurar cidades | Exception - {ex.Message}." };
+            }
+        }
+
+        public DefaultReturn<IEnumerable<Cidade>> ObterPorRegiaoNull()
+        {
+            try
+            {
+                var result = Listar();
+
+                if (result.Status != System.Net.HttpStatusCode.OK)
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.InternalServerError, Message = "Erro ao obter cidades." };
+
+                var cidades = result.Obj.Where(x => x.RegiaoId == null || x.RegiaoId == Guid.Empty);
+                if (!cidades.Any())
+                    return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.NotFound, Message = "Nenhuma cidade sem região encontrada." };
 
                 return new DefaultReturn<IEnumerable<Cidade>> { Status = System.Net.HttpStatusCode.OK, Obj = cidades };
             }

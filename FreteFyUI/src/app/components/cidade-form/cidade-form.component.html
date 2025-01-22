@@ -1,0 +1,22 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+<div>
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" formControlName="nome">
+    <div *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched">
+    <span class="error">Nome é obrigatório</span>
+    </div>
+</div>
+<div>
+    <label for="uf">UF:</label>
+    <select class="form-control" id="uf" formControlName="uf">
+        <option value="" disabled selected>Selecione uma UF</option>
+        <option *ngFor="let uf of estados" [value]="uf">{{ uf }}</option>
+      </select>
+
+    <div *ngIf="form.get('uf')?.invalid && form.get('uf')?.touched">
+    <span class="error">UF é obrigatório</span>
+    </div>
+</div>
+<button type="submit">Salvar</button>
+<button type="button" (click)="cancelButton()">Cancelar</button>
+</form>

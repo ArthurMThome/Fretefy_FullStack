@@ -1,0 +1,30 @@
+<div class="regiao-form-container">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="nome">Nome da Região</label>
+        <input id="nome" formControlName="nome" class="form-control" />
+        <div *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched" class="text-danger">
+          Nome é obrigatório
+        </div>
+      </div>
+  
+      <div formArrayName="cidades">
+        <div *ngFor="let cidadeControl of cidadesFormArray.value; let i = index" [formGroupName]="i">
+            <div class="form-group">
+              <label for="cidadeNome">Cidade</label>
+              <select formControlName="id" class="form-control">
+                <option *ngFor="let cidade of cidades" [value]="cidade.id">{{ cidade.nome }} | {{ cidade.uf }}</option>
+              </select>
+              <button type="button" class="btn btn-danger mt-2" (click)="removeCidadeControl(i)">Remover</button>
+            </div>
+          </div>
+      </div>
+  
+      <button type="button" class="btn btn-success mt-2" (click)="addCidadeControl()">Adicionar</button>
+      <br>
+      <br>
+      <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+      <button type="button" class="btn btn-primary mt-3" (click)="cancelButton()">Cancelar</button>
+    </form>
+  </div>
+  
